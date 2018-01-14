@@ -1,0 +1,6 @@
+framework module Pods_SkyWaySFUSample {
+  umbrella header "Pods-SkyWaySFUSample-umbrella.h"
+
+  export *
+  module * { export * }
+}
