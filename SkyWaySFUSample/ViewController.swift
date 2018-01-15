@@ -12,6 +12,7 @@ import SkyWay
 class ViewController: UIViewController, UITextFieldDelegate ,UICollectionViewDataSource,
 UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
 
+    // SkyWay Configuration Parameter
     let apiKey = "***************** Enter your API KEY *******************"
     let domain = "localhost"
 
@@ -44,15 +45,18 @@ UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
         roomName.delegate = self
         endButton.isHidden = true
 
+        // peer connection
         let options: SKWPeerOption = SKWPeerOption.init()
         options.key = apiKey
         options.domain = domain
         // options.debug = .DEBUG_LEVEL_ALL_LOGS
         peer = SKWPeer.init(options: options)
 
+        // peer event handling
         peer?.on(.PEER_EVENT_OPEN, callback: {obj in
             self.ownId = obj as! String
 
+            // create local video
             let constraints: SKWMediaConstraints = SKWMediaConstraints.init()
             constraints.maxWidth = 960
             constraints.maxHeight = 540
@@ -98,11 +102,13 @@ UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
         }
         self.roomName.resignFirstResponder()
 
+        // join SFU room
         let option = SKWRoomOption.init()
         option.mode = .ROOM_MODE_SFU
         option.stream = self.localStream
         sfuRoom = peer?.joinRoom(withName: roomNamePrefix + roomName, options: option) as? SKWSFURoom
 
+        // room event handling
         sfuRoom?.on(.ROOM_EVENT_OPEN, callback: {obj in
             self.roomNameLabel.text = (obj as? String)?.replacingOccurrences(of: self.roomNamePrefix, with: "")
             self.submitButton.isHidden = true
@@ -111,18 +117,24 @@ UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
 
         sfuRoom?.on(.ROOM_EVENT_CLOSE, callback: {obj in
             self.lock.lock()
+
             self.arrayMediaStreams.enumerateObjects({obj, _, _ in
                 let mediaStream: SKWMediaStream = obj as! SKWMediaStream
                 let peerId = mediaStream.peerId!
+                // remove other videos
                 if let video: SKWVideo = self.arrayVideoViews.object(forKey: peerId) as? SKWVideo {
                     mediaStream.removeVideoRenderer(video, track: 0)
                     video.removeFromSuperview()
                     self.arrayVideoViews.removeObject(forKey: peerId)
                 }
             })
+
             self.arrayMediaStreams.removeAllObjects()
             self.collectionView.reloadData()
+
             self.lock.unlock()
+
+            // leave SFU room
             self.sfuRoom?.offAll()
             self.sfuRoom = nil
         })
@@ -131,8 +143,11 @@ UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
             let mediaStream: SKWMediaStream = obj as! SKWMediaStream
 
             self.lock.lock()
+
+            // add videos
             self.arrayMediaStreams.add(mediaStream)
             self.collectionView.reloadData()
+
             self.lock.unlock()
         })
 
@@ -141,13 +156,17 @@ UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
             let peerId = mediaStream.peerId!
 
             self.lock.lock()
+
+            // remove video
             if let video: SKWVideo = self.arrayVideoViews.object(forKey: peerId) as? SKWVideo {
                 mediaStream.removeVideoRenderer(video, track: 0)
                 video.removeFromSuperview()
                 self.arrayVideoViews.removeObject(forKey: peerId)
             }
+
             self.arrayMediaStreams.remove(mediaStream)
             self.collectionView.reloadData()
+
             self.lock.unlock()
         })
 
@@ -156,13 +175,16 @@ UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
             var checkStream: SKWMediaStream? = nil
 
             self.lock.lock()
+
             self.arrayMediaStreams.enumerateObjects({obj, _, _ in
                 let mediaStream: SKWMediaStream = obj as! SKWMediaStream
                 if peerId == mediaStream.peerId {
                     checkStream = mediaStream
                 }
             })
+
             if let checkStream = checkStream {
+                // remove video
                 if let video: SKWVideo = self.arrayVideoViews.object(forKey: peerId) as? SKWVideo {
                     checkStream.removeVideoRenderer(video, track: 0)
                     video.removeFromSuperview()
@@ -171,6 +193,7 @@ UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
                 self.arrayMediaStreams.remove(checkStream)
                 self.collectionView.reloadData()
             }
+
             self.lock.unlock()
         })
     }
@@ -182,9 +205,11 @@ UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
         self.roomNameLabel.text = ""
         self.endButton.isHidden = true
         self.submitButton.isHidden = false
+        // leave SFU room
         sfuRoom.close()
     }
 
+    // CollectionView Delegate
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 1
     }
@@ -200,6 +225,7 @@ UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
         if let view: UIView = cell.viewWithTag(1) {
             if let stream: SKWMediaStream = arrayMediaStreams.object(at: indexPath.row) as? SKWMediaStream {
                 let peerId: String = stream.peerId!
+                // add stream
                 var video: SKWVideo? = arrayVideoViews.object(forKey: peerId) as? SKWVideo
                 if video == nil {
                     video = SKWVideo.init(frame: cell.bounds)
