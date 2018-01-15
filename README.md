@@ -1,5 +1,8 @@
 # SkyWaySFUSample
-SkyWay SFU Sample in Swift
+SkyWay SFU video chat Sample in Swift
+
+SkyWayのSFUを使用したビデオチャットのサンプルです
+アプリそれぞれで双方向通信、PCはSkyWayのサンプルを使えば接続可能です
 
 ## How to build
 Download this repository and move Projects
