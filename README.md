@@ -7,7 +7,7 @@ Download this repository and move Projects
 cd SkyWaySFUSample
 ```
 
-Cocoapods install
+Install library in Cocoapods
 ```
 pod install
 ```
@@ -34,27 +34,27 @@ If you run this project, not Simulator but actual machine
 ```
 cd SkyWaySFUSample
 ```
-wCocoapods 
+Cocoapodsでライブラリをインストール
 ```
 pod install
 ```
 
-Open projects in Xcode(then not .xcodeproj but .xcworkspace)
+プロジェクトをXcodeで開く（.xcodeprojではなく.xcworkspaceを開く）
 ```
 open SkyWaySFUSample.xcworkspace
 ```
 
-Input your API Key
+API Keyを入力
 ```
 ViewController.swift
 let apiKey = "***************** Enter your API KEY *******************"
 ```
 
-Exec Build!
+ビルドして実行！
 
 ---
 
-If you run this project, not Simulator but actual machine
+シミュレーターでは動かないため、実機でテストしてください。
 
 ## License
 MIT License
